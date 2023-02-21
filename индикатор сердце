@@ -1,0 +1,100 @@
+#define PIN_NEO_PIXEL  D2   // На каком пине лента
+#define NUM_PIXELS     25   // Число светодиодов в ленте
+#define button_pin  D1
+
+#include <Adafruit_NeoPixel.h>
+
+Adafruit_NeoPixel pix(NUM_PIXELS, PIN_NEO_PIXEL, 
+                           NEO_GRB + NEO_KHZ800);
+
+int NUM_PIXELS_X=5;
+int NUM_PIXELS_Y=5;
+
+
+uint32_t c0 = 0x40d2e5;
+uint32_t c1 = 0xff1c60;
+
+uint32_t happy[NUM_PIXELS] = {
+c0, c1 ,c0 ,c1 , c0,
+c1, c1 ,c1 ,c1 , c1,
+c1, c1 ,c1 ,c1 , c1,
+c0, c1 ,c1 ,c1 , c0, 
+c0, c0 ,c1 ,c0 , c0,
+};
+
+uint32_t sad[NUM_PIXELS] = {
+c0, c1 ,c0 ,c1 ,c0,
+c0, c1 ,c0 ,c1 ,c0,
+c1, c0 ,c0 ,c0 ,c1,
+c1, c0 ,c0 ,c0 ,c1,
+c0, c1 ,c1 ,c1 ,c0,
+};
+
+uint32_t *current_pic = happy;
+
+int but = HIGH; //button state
+
+void pic(uint32_t pat[]) {
+    int i = 0;
+    for(int y=0; y<NUM_PIXELS_Y; y++) {
+        for(int x=0; x<NUM_PIXELS_X; x++) {
+          //int i = y * NUM_PIXELS_Y + x;
+          
+          int j = (y%2 == 0 )?i:y * NUM_PIXELS_Y-1 + NUM_PIXELS_X-x;
+          
+          //if (y%2 == 0 ) i = i + y el
+          //int i = 
+          //uint32_t color=pix.Color(0, 255, 0);
+          
+          uint32_t color=pat[i];
+          
+          //if (em[i] == 1) color=pix.Color(255, 0, 0);
+          pix.setPixelColor(j, color);
+          pix.show();
+          Serial.print(i); Serial.print(" "); Serial.print(j); Serial.print(" ");  Serial.println(pat[i]);
+          i++;
+        }
+    }
+  
+}
+
+void setup() {
+   pix.begin(); // иницилизация
+   pix.setBrightness(20); //я ркость
+  pic(current_pic);
+  pix.show();
+  Serial.begin(9600);
+  Serial.println("start ");
+  pinMode(button_pin, INPUT_PULLUP);
+}
+
+void loop() {
+  //Serial.println(but);
+  but = digitalRead(button_pin);
+  //Serial.println(but);
+
+  
+  if (but == LOW) {
+    //Serial.println("pressed ");// Serial.print((int)current_pic);
+    if (current_pic == sad) current_pic=happy;
+    else if (current_pic == happy) current_pic=sad;
+    
+    delay(500);
+    pic(current_pic);
+    
+  pix.show();
+  }
+  
+  for(int i=20; i<150; i+=2) {
+    pix.setBrightness(i);
+     pix.show();
+    delay(50);
+  }
+   for(int i=150; i>0; i-=2) {
+    pix.setBrightness(i);
+     pix.show();
+    delay(50);
+  }
+  
+  delay(50);
+}
